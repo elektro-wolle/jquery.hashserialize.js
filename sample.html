@@ -1,0 +1,27 @@
+<?xml version="1.0" charset="utf-8"?>
+<html>
+<head>
+<meta charset="utf-8" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.hashserialize.js"></script>
+<script type="text/javascript">
+	$(function() {
+		var ajaxState = {};
+		$.restoreFromHash(function(state) {
+			$("#target").html(state["caption"]);
+		});
+		$("#event").click(function() {
+			var title = "Test äüß№ç ”“Í " + Math.random(100);
+			ajaxState["caption"] = title;
+			$.serializeToHash(ajaxState);
+			$("#target").html(title);
+		});
+	});
+</script>
+</head>
+<body>
+  <h1 id="target">Test 1</h1>
+  <a id="event">Click Me!</a>
+  <div id="state"></div>
+</body>
+</html>
