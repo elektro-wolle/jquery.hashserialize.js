@@ -26,6 +26,34 @@
  *				});
  *	});
  */
+/*
+ * simple history-manager for ajax-applications.
+ * 
+ * The current state of the AJAX-Script is encoded via window.location.hash
+ *
+ * (c) 2013 Wolfgang Jung (code@elektrowolle.de)
+ * 
+ * License: MIT
+ * 
+ * Usage within your HTML code:
+ *  
+ * 	$(function() {
+ *   	var ajaxState = {};
+ *		$.restoreFromHash(function(state) {
+ *          // retrieve anything you need from the current state
+ *			$("#caption").html(state["caption"]);
+ *          $.ajax(..., data : { "search" : state["searchTerm"] }, ...);
+ *		});
+ *		$("#event").click(
+ *				function() {
+ *					ajaxState["caption"] = ...;
+ *					ajaxState["searchTerm"] = ...;
+ *					....
+ *					$.serializeToHash(ajaxState);
+ *					....
+ *				});
+ *	});
+ */
 (function($, undefined) {
 	// Helper functions for unicode <-> hex conversions
 	var unicodeToHex = function(str) {
@@ -71,38 +99,42 @@
 		 }
 		 return jsonString;
 	};
-	
+	var decodedObject = undefined;
+	var callbacks = $.Callbacks();
 	// Helperfunction for restore
 	$.fn.extend({
 		_restoreFromLocationHash : function(e) {
 			// check, if hash is present
 			if (window.location.hash != '') {
-				var encoded = window.location.hash.substr(1);
-				var jsonString = hexToUnicode(encoded);
-				 // parse JSON Object
-	  			 try {
-					var obj = $.parseJSON(jsonString);
-					// callback to user-space for reload of AJAX-Content
-					(callback)(obj);
-	  			 } catch (ex) {
-					// ignore
-	  			 }
-	  			 return;
-			} 
+				if (decodedObject == undefined) {
+					var encoded = window.location.hash.substr(1);
+					var jsonString = hexToUnicode(encoded);
+					 // parse JSON Object
+		  			 try {
+		  				decodedObject = $.parseJSON(jsonString);
+						// callback to user-space for reload of AJAX-Content
+		  			 } catch (ex) {
+						// ignore
+		  			 }
+				}
+				if (decodedObject != undefined) {
+					callbacks.fire(decodedObject);
+				}					
+			} else if (e && e.type == 'hashchange') {
 				// Back-button to first page without location.hash -> trigger
 				// reload
-			if (e && e.type == 'hashchange') {
 				window.location.reload();
 			}
+			
 		}});
-
-	var callback = function(state) {};
 
 	// JQuery-Extension
 	$.extend({
 		restoreFromHash : function(cb) {
-			// remember callback function
-			callback = cb;
+			if (callbacks.has(cb) == false) {
+				// remember callback function
+				callbacks.add(cb);
+			}
 			// load data after reload of page
 			$.fn._restoreFromLocationHash();
 		},
@@ -119,3 +151,4 @@
 	// and history.forward
 	$(window).bind("hashchange", $.fn._restoreFromLocationHash);
 })(jQuery);
+
