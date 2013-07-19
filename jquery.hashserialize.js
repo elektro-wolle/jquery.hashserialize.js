@@ -1,58 +1,30 @@
 /*
  * simple history-manager for ajax-applications.
- * 
+ *
  * The current state of the AJAX-Script is encoded via window.location.hash
  *
  * (c) 2013 Wolfgang Jung (code@elektrowolle.de)
- * 
- * License: LGPL v3 (see http://www.gnu.org/licenses/lgpl.html)
- * 
- * Usage within your HTML code:
- *  
- * 	$(function() {
- *   	var ajaxState = {};
- *		$.restoreFromHash(function(state) {
- *          // retrieve anything you need from the current state
- *			$("#caption").html(state["caption"]);
- *          $.ajax(..., data : { "search" : state["searchTerm"] }, ...);
- *		});
- *		$("#event").click(
- *				function() {
- *					ajaxState["caption"] = ...;
- *					ajaxState["searchTerm"] = ...;
- *					....
- *					$.serializeToHash(ajaxState);
- *					....
- *				});
- *	});
- */
-/*
- * simple history-manager for ajax-applications.
- * 
- * The current state of the AJAX-Script is encoded via window.location.hash
  *
- * (c) 2013 Wolfgang Jung (code@elektrowolle.de)
- * 
  * License: MIT
- * 
+ *
  * Usage within your HTML code:
- *  
- * 	$(function() {
- *   	var ajaxState = {};
- *		$.restoreFromHash(function(state) {
+ *
+ *      $(function() {
+ *      var ajaxState = {};
+ *              $.restoreFromHash(function(state) {
  *          // retrieve anything you need from the current state
- *			$("#caption").html(state["caption"]);
+ *                      $("#caption").html(state["caption"]);
  *          $.ajax(..., data : { "search" : state["searchTerm"] }, ...);
- *		});
- *		$("#event").click(
- *				function() {
- *					ajaxState["caption"] = ...;
- *					ajaxState["searchTerm"] = ...;
- *					....
- *					$.serializeToHash(ajaxState);
- *					....
- *				});
- *	});
+ *              });
+ *              $("#event").click(
+ *                              function() {
+ *                                      ajaxState["caption"] = ...;
+ *                                      ajaxState["searchTerm"] = ...;
+ *                                      ....
+ *                                      $.serializeToHash(ajaxState);
+ *                                      ....
+ *                              });
+ *      });
  */
 (function($, undefined) {
 	// Helper functions for unicode <-> hex conversions
@@ -100,6 +72,7 @@
 		 return jsonString;
 	};
 	var decodedObject = undefined;
+	var withinSerialize = false;
 	var callbacks = $.Callbacks();
 	// Helperfunction for restore
 	$.fn.extend({
@@ -117,7 +90,7 @@
 						// ignore
 		  			 }
 				}
-				if (decodedObject != undefined) {
+				if (decodedObject != undefined && withinSerialize == false) {
 					callbacks.fire(decodedObject);
 				}					
 			} else if (e && e.type == 'hashchange') {
@@ -125,7 +98,7 @@
 				// reload
 				window.location.reload();
 			}
-			
+			withinSerialize = false;
 		}});
 
 	// JQuery-Extension
@@ -142,6 +115,7 @@
 			// Serialize obj as JSON -> convert to utf-8 -> convert to hex
 			var jsonString = JSON.stringify(obj);
 			var hex = unicodeToHex(jsonString);
+			withinSerialize = true;
 			window.location.hash = hex;
 		}
 	});
@@ -151,4 +125,3 @@
 	// and history.forward
 	$(window).bind("hashchange", $.fn._restoreFromLocationHash);
 })(jQuery);
-
