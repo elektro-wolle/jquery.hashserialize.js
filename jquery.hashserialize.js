@@ -112,7 +112,6 @@
 		serializeToHash : function(obj) {
 			// Serialize obj as JSON -> convert to utf-8 -> convert to hex
 			var jsonString = JSON.stringify(obj);
-                        alert(jsonString);
 			var hex = unicodeToHex(jsonString);
 			withinSerialize = true;
 			window.location.hash = hex;
