@@ -71,7 +71,6 @@
 		 }
 		 return jsonString;
 	};
-	var decodedObject = undefined;
 	var withinSerialize = false;
 	var callbacks = $.Callbacks();
 	// Helperfunction for restore
@@ -79,17 +78,16 @@
 		_restoreFromLocationHash : function(e) {
 			// check, if hash is present
 			if (window.location.hash != '') {
-				if (decodedObject == undefined) {
-					var encoded = window.location.hash.substr(1);
-					var jsonString = hexToUnicode(encoded);
-					 // parse JSON Object
-		  			 try {
-		  				decodedObject = $.parseJSON(jsonString);
-						// callback to user-space for reload of AJAX-Content
-		  			 } catch (ex) {
-						// ignore
-		  			 }
-				}
+			 	var decodedObject;
+				var encoded = window.location.hash.substr(1);
+				var jsonString = hexToUnicode(encoded);
+				// parse JSON Object
+		  		try {
+		  			decodedObject = $.parseJSON(jsonString);
+					// callback to user-space for reload of AJAX-Content
+		  		} catch (ex) {
+					// ignore
+		  		}
 				if (decodedObject != undefined && withinSerialize == false) {
 					callbacks.fire(decodedObject);
 				}					
@@ -114,6 +112,7 @@
 		serializeToHash : function(obj) {
 			// Serialize obj as JSON -> convert to utf-8 -> convert to hex
 			var jsonString = JSON.stringify(obj);
+                        alert(jsonString);
 			var hex = unicodeToHex(jsonString);
 			withinSerialize = true;
 			window.location.hash = hex;
